@@ -10,6 +10,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useProviderListings } from "@/hooks/useProviderListings"
 import { ClinePassHint } from "./ClinePassHint"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
+import { AddOpenAICompatibleProvider } from "./providers/AddOpenAICompatibleProvider"
 import { AIhubmixProvider } from "./providers/AihubmixProvider"
 import { AnthropicProvider } from "./providers/AnthropicProvider"
 import { AskSageProvider } from "./providers/AskSageProvider"
@@ -18,6 +19,7 @@ import { BedrockProvider } from "./providers/BedrockProvider"
 import { ClaudeCodeProvider } from "./providers/ClaudeCodeProvider"
 import { ClinePassProvider } from "./providers/ClinePassProvider"
 import { ClineProvider } from "./providers/ClineProvider"
+import { DeleteOpenAICompatibleProvider } from "./providers/DeleteOpenAICompatibleProvider"
 import { DifyProvider } from "./providers/DifyProvider"
 import { GenericProviderSettings } from "./providers/GenericProviderSettings"
 import { GroqProvider } from "./providers/GroqProvider"
@@ -94,7 +96,7 @@ const ApiOptions = ({
 
 	const selectedProvider =
 		(currentMode === "plan" ? apiConfiguration?.planModeApiProvider : apiConfiguration?.actModeApiProvider) || "anthropic"
-	const { providers: catalogProviderListings } = useProviderListings()
+	const { providers: catalogProviderListings, refresh: refreshProviders } = useProviderListings()
 	const catalogProviderListing = useMemo(
 		() => catalogProviderListings.find((provider) => provider.id === selectedProvider),
 		[catalogProviderListings, selectedProvider],
@@ -348,6 +350,36 @@ const ApiOptions = ({
 				</ProviderDropdownWrapper>
 			</DropdownContainer>
 
+			{showModelOptions &&
+				!isPopup &&
+				!isDropdownVisible &&
+				selectedProvider === "openai" &&
+				!remoteConfigSettings?.remoteConfiguredProviders?.length && (
+					<AddOpenAICompatibleProvider
+						onCreated={async (providerId) => {
+							await refreshProviders()
+							handleProviderChange(providerId)
+						}}
+					/>
+				)}
+			{showModelOptions &&
+				!isPopup &&
+				!isDropdownVisible &&
+				selectedProvider.startsWith("custom-openai-") &&
+				!remoteConfigSettings?.remoteConfiguredProviders?.length && (
+					<div data-testid="delete-custom-provider-control">
+						<DeleteOpenAICompatibleProvider
+							key={selectedProvider}
+							name={currentProviderLabel}
+							onDeleted={async () => {
+								await refreshProviders()
+								handleProviderChange("openai")
+							}}
+							providerId={selectedProvider}
+						/>
+					</div>
+				)}
+
 			{!isPopup && <ClinePassHint currentMode={currentMode} selectedProvider={selectedProvider} />}
 
 			{apiConfiguration && selectedProvider === "hicap" && (
@@ -474,6 +506,7 @@ const ApiOptions = ({
 				<OpenAICompatibleProvider
 					currentMode={currentMode}
 					isPopup={isPopup}
+					key={selectedProvider}
 					providerId={selectedProvider}
 					showModelOptions={showModelOptions}
 				/>

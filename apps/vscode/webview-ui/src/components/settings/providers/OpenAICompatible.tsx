@@ -370,6 +370,7 @@ export const OpenAICompatibleProvider = ({
 								handleOpenAiModelSelection(modelId)
 							}}
 							value={selectedModelId && availableOpenAiModels.includes(selectedModelId) ? selectedModelId : ""}>
+							{!selectedModelId && <VSCodeOption value="">Select a model…</VSCodeOption>}
 							{selectedModelId && !availableOpenAiModels.includes(selectedModelId) && (
 								<VSCodeOption value="">{selectedModelId} (not in current list)</VSCodeOption>
 							)}
@@ -381,6 +382,7 @@ export const OpenAICompatibleProvider = ({
 							<VSCodeOption value="__custom__">Use custom model ID…</VSCodeOption>
 						</VSCodeDropdown>
 					</DropdownContainer>
+					{!selectedModelId && <div role="status">Choose a model above to save it before starting a task.</div>}
 
 					{(isCustomOpenAiModelEntryVisible ||
 						(selectedModelId && !availableOpenAiModels.includes(selectedModelId))) && (
